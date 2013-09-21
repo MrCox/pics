@@ -7,13 +7,14 @@ var express = require('express'),
 
 var comic = new schema({
   title: String,
-  date: {type: Date, default: Date.now}
+  date: Number,
+  hits: Number,
+  issue: Number
 });
 
 var c = db.model('comic', comic);
 
 c.find({'title':'test'}, function(err, docs){
-  console.log(docs);
 });
 
 app.configure( function() {
@@ -25,6 +26,7 @@ app.configure( function() {
   app.use('/public', express.static(__dirname+'/public'));
 })
 app.get('/', function(req, res){
+  res.render('layout.jade', {pageTitle:'test'});
 })
 
 http.createServer(app).listen(app.get('port'), function() {
