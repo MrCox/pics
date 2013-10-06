@@ -40,8 +40,8 @@ app.configure(function() {
   app.use('/public', express.static(__dirname+'/public'));
 });
 
-c.find({}, function(err, docs){
-  console.log(docs)
+c.findOne().sort({'issue':-1}).exec(function(err, doc){
+  console.log(doc)
 });
 
 app.get('/', function(req, res){
