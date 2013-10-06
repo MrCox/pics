@@ -1,8 +1,9 @@
 {"dependencies":{
-  "d3":"*",
-  "express":"*",
-  "jade":"*",
-  "mongoose":"*",
-  "forever":"*"
+    "d3":"*",
+    "express":"*",
+    "jade":"*",
+    "mongoose":"*",
+    "forever":"*",
+    "chokidar":"*"
   }
 }
