@@ -9,7 +9,7 @@ var express = require('express'),
 
 var watcher = dir.watch(path, {ignored:/^\./, persistent: true});
 
-watcher.on('add', function(p){
+watcher.on('add', function(p, stats){
   console.log(path, stats)
 });
 
