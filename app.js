@@ -7,7 +7,8 @@ var express = require('express'),
   db = mongoose.connect('mongodb://localhost/comics'),
   app = express(),
   schema = mongoose.Schema,
-  cpath = '/root/pics/public/comics/';
+  cpath = '/root/pics/public/comics/',
+  newest;
 
 var comic = new schema({
   title: String,
@@ -27,7 +28,8 @@ watcher.on('add', function(p, stats){
     n.issue = files.length;
     n.hits = 0;
     n.date = stats.atime.getTime();
-    n.save(function(n, err){if (err) throw err;});
+    n.save(function(err, n){if (err) console.log(err);});
+    newest = n.title;
   });
 });
 
@@ -41,11 +43,11 @@ app.configure(function() {
 });
 
 c.findOne().sort({'issue':-1}).exec(function(err, doc){
-  console.log(doc)
+  newest = doc && doc.title;
 });
 
 app.get('/', function(req, res){
-  //res.render('layout.jade', {pageTitle:'test'});
+  res.sendfile(cpath + newest);
 });
 
 http.createServer(app).listen(app.get('port'), function() {
