@@ -1,29 +1,35 @@
 var express = require('express'),
-  app = express(),
   http = require('http'),
   mongoose = require('mongoose'),
-  db = mongoose.connect('mongodb://localhost/comics'),
-  schema = mongoose.Schema,
+  path = require('path'),
   dir = require('chokidar'),
-  path = '/root/pics/public/comics/';
-
-var watcher = dir.watch(path, {ignored:/^\./, persistent: true});
-
-watcher.on('add', function(p, stats){
-  console.log(path, stats)
-});
+  fs = require('fs'),
+  db = mongoose.connect('mongodb://localhost/comics'),
+  app = express(),
+  schema = mongoose.Schema,
+  cpath = '/root/pics/public/comics/';
 
 var comic = new schema({
   title: String,
   date: Number,
   hits: Number,
-  issue: Number
+  issue: Number,
+  path: String
+}), c = db.model('comic', comic);
+
+var watcher = dir.watch(cpath, 
+  {ignored:/^\./, ignoreInitial: true, persistent: true});
+
+watcher.on('add', function(p, stats){
+  fs.readdir(cpath, function(err, files){
+    var n = new c;
+    n.title = path.basename(p);
+    n.issue = files.length;
+    n.hits = 0;
+    n.date = stats.atime.getTime();
+    n.save(function(n, err){if (err) throw err;});
+  });
 });
-
-var c = db.model('comic', comic);
-
-//c.find({'title':'test'}, function(err, docs){
-//});
 
 app.configure(function() {
   app.set('port', process.env.PORT || 80);
@@ -33,8 +39,13 @@ app.configure(function() {
   app.use(app.router);
   app.use('/public', express.static(__dirname+'/public'));
 });
+
+c.find({}, function(err, docs){
+  console.log(docs)
+});
+
 app.get('/', function(req, res){
-  res.render('layout.jade', {pageTitle:'test'});
+  //res.render('layout.jade', {pageTitle:'test'});
 });
 
 http.createServer(app).listen(app.get('port'), function() {
