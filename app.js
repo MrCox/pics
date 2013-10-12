@@ -22,16 +22,20 @@ var watcher = dir.watch(cpath,
   {ignored:/^\./, ignoreInitial: true, persistent: true});
 
 watcher.on('add', function(p, stats){
-  fs.readdir(cpath, function(err, files){
-    var n = new c;
-    n.title = path.basename(p);
-    n.issue = files.length;
-    n.hits = 0;
-    n.date = stats.atime.getTime();
-    n.save(function(err, n){if (err) console.log(err);});
-    newest = n.title;
+    fs.readdir(cpath, function(err, files){
+      var n = new c;
+      n.title = path.basename(p);
+      n.issue = files.length;
+      n.hits = 0;
+      n.date = stats.atime.getTime();
+      n.save(function(err, n){if (err) console.log(err);});
+      newest = n.title;
+    });
+  }).on('unlink', function(p, stats){
+    c.findOne({'title':path.basename(p)}, function(err, doc){
+      doc.remove();
+    });
   });
-});
 
 app.configure(function() {
   app.set('port', process.env.PORT || 80);
@@ -48,6 +52,11 @@ c.findOne().sort({'issue':-1}).exec(function(err, doc){
 
 app.get('/', function(req, res){
   res.sendfile(cpath + newest);
+  c.findOne({'title':newest}, function(err, doc){
+    res.render('layout.jade', {pageTitle:newest, data: doc});
+    doc.hits = doc.hits + 1;
+    doc.save();
+  });
 });
 
 http.createServer(app).listen(app.get('port'), function() {
